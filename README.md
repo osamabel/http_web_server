@@ -15,7 +15,9 @@ Introduction to TCP/IP and Sockets, part 1: Introducing the protocols and API : 
 
 Introduction to TCP/IP and Sockets, part 2: Example code Walk-Through : https://www.youtube.com/watch?v=OuYPe_HcLWc
 
+https://www.rfc-editor.org/rfc/rfc2616
 
+https://www.rfc-editor.org/rfc/rfc5322
 
 ------------------------
 
