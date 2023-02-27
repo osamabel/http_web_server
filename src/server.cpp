@@ -6,7 +6,7 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/26 17:26:56 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/02/27 20:19:27 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/02/27 20:30:37 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,27 +48,17 @@ Web::Web() : __curly_server(false), __curly_location(false)
 void Web::__parse(std::string &__config_path)
 {
 	std::string line;
-	// std::string rest;
-	// size_t pos = 0;
+
 	__file.open(__config_path);
-	
 	if (__file.fail())
 	{
 		std::cerr << "error: Fail to opean configuration file!." << std::endl;
 		exit(1);
 	}
-	// int i = 30;
-	// while (i--)
-
-	// server{listen 0.0.0.0;listen 0.0.0.0:9900; #listen 0.0.0.0:9900
-	//server{listen 0.0.0.0;listen 0.0.0.0:9900;
-
 	while (!__file.eof())
 	{
 		if (!__line_splited.empty())
 		{
-				// __vector_display(__line_splited);
-
 			(this->*__handlers.at(__line_splited[0]))();
 			continue;
 		}
@@ -77,29 +67,7 @@ void Web::__parse(std::string &__config_path)
 			getline(__file, line);
 			line = __extract_parameters(line);
 			__line_splited = __split_attrubites(line, "{}; \t\r\v\f");
-			
-			// if (line == "{" || line == "}")
-			// {
-			// 	line.clear();
-			// 	continue;
-			// }
-			// if (!line.empty())
-			// {
-			// 	pos = line.find(';');
-			// 	rest = line.substr(pos + 1); __trim(rest);
-			// 	line = line.substr(0, pos); __trim(line);
-			// 	__line_splited = __split_attrubites(line, " ;");
-			// 	line.clear();
-			// }
 		}
-		// else if (!rest.empty())
-		// {
-		// 	pos = rest.find(';');
-		// 	line = rest.substr(0, pos); __trim(line);
-		// 	rest = rest.substr(pos + 1); __trim(rest);
-		// 	__line_splited = __split_attrubites(line, " ;");
-		// 	line.clear();
-		// }
 	}
 	__file.close();
 }
@@ -112,6 +80,7 @@ void Web::__server()
 	if (__line_splited.size() == 1)
 	{
 		getline(__file, line);
+		line = __extract_parameters(line);
 		__line_splited.clear();
 		__line_splited = __split_attrubites(line, "{}; \t\r\v\f");
 		//TODO: handline "{, }"
