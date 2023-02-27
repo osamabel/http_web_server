@@ -6,11 +6,12 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/22 15:47:12 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/02/26 19:06:14 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/02/27 20:08:31 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/server.hpp"
+#include "include/utils.hpp"
 
 std::string __config_file(int ac, char **av)
 {
@@ -35,11 +36,18 @@ std::string __config_file(int ac, char **av)
 int main(int ac, char **av)
 {
 	// parse config file;
-	std::string __config = __config_file(ac, av);
-	
-	Web servers(__config);
+	try
+	{
+		std::string __config = __config_file(ac, av);
+		
+		Web servers;
 
-	servers.__parse();
+		servers.__parse(__config);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
 	
     return 0;
 }
