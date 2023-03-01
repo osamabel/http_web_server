@@ -6,7 +6,7 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/27 09:49:57 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/02/27 20:05:09 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/02/28 12:16:31 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ void __vector_display(std::vector<std::string> &vec)
 	std::cout << '\n';
 	std::cout << "-------------------" << std::endl;
 }
+
 
 // void __open_curly_bracket( bool __server, bool __loc_zone, bool __location)
 // {
