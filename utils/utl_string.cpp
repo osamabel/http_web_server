@@ -6,11 +6,23 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/27 09:49:57 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/02/28 12:16:31 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/03/01 11:19:15 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/utils.hpp"
+#include "../include/errors.hpp"
+
+std::string __config_file(int ac, char **av)
+{
+	if (ac == 1)
+		return ("config/default.conf");
+	else if (ac > 2)
+		__bad_number_arguments();
+	else
+		__extention_is_good(av[1]);
+	return (av[1]);
+}
 
 std::vector<std::string> __split_attrubites(std::string str, const std::string delims)
 {

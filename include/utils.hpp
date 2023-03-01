@@ -6,7 +6,7 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/27 09:50:00 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/02/27 18:41:04 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/03/01 11:18:59 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 #include <fstream>
 #include <vector>
 
-
+std::string __config_file(int ac, char **av);
 std::vector<std::string> __split_attrubites(std::string str, const std::string delims);
 std::string __extract_parameters(std::string &line);
 std::string __trim(std::string &expretion);
