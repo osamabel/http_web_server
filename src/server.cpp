@@ -6,21 +6,61 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/26 17:26:56 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/02/27 20:30:37 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/03/01 09:45:27 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <algorithm>
 #include "../include/server.hpp"
 #include "../include/utils.hpp"
+#include "../include/errors.hpp"
+#include "../include/default.hpp"
 
-Server::Server()
+Location::Location()
 {
 	/*i feel like i need to put somthing here i don't know yet XD*/
+}
+
+Location::~Location()
+{
+	/*probably i'll need to free some containers*/
+}
+
+Server::Server() : 
+__index_default(true), 
+__listen_default(true), 
+__autoindex_default(true),
+__client_body_max_size_default(true)
+{
+	/*i feel like i need to put somthing here i don't know yet XD*/
+	std::vector<std::string>	__default;
+
+	/*LISTEN DEFAULT*/
+	__default.push_back((std::string(ADDRESS).append(":")).append(PORT));
+	__attributes["listen"] = __default;
+	__default.clear();
+
+	/*AUTOINDEX DEFAULT*/
+	__default.push_back(std::string(AUTOINDEX));
+	__attributes["autoindex"] = __default;
+	__default.clear();
+
+	/*INDEX DEFAULT*/
+	__default.push_back(std::string(INDEX));
+	__attributes["index"] = __default;
+	__default.clear();
+
+	/*CLIENT_BODY_MAX_SIZE DEFAULT*/
+	__default.push_back(std::string(CLIENT_BODY_MAX_SIZE));
+	__attributes["client_body_max_size"] = __default;
+	__default.clear();
 }
 
 Server::~Server()
 {
 	/*probably i'll need to free some containers*/
+	__locations.clear();
+	__attributes.clear();
 }
 
 Web::~Web()
@@ -35,6 +75,7 @@ Web::Web() : __curly_server(false), __curly_location(false)
 	__handlers["listen"] = &Web::__listen;
 	__handlers["location"] = &Web::__location;
 	__handlers["server_name"] = &Web::__server_name;
+	__handlers["cgi"] = &Web::__cgi;
 	__handlers["root"] = &Web::__root;
 	__handlers["index"] = &Web::__index;
 	__handlers["redirect"] = &Web::__redirect;
@@ -45,139 +86,258 @@ Web::Web() : __curly_server(false), __curly_location(false)
 	__handlers["client_body_max_size"] = &Web::__client_body_max_size;
 }
 
+/* ---------------------------------- PARSE --------------------------------- */
+/* ---------------------------------- PARSE --------------------------------- */
+/* ---------------------------------- PARSE --------------------------------- */
+/* ---------------------------------- PARSE --------------------------------- */
 void Web::__parse(std::string &__config_path)
 {
-	std::string line;
+	Server									__server;
+	std::string 							__line;
+	std::vector<std::string>				__values;
 
 	__file.open(__config_path);
-	if (__file.fail())
-	{
-		std::cerr << "error: Fail to opean configuration file!." << std::endl;
-		exit(1);
-	}
+	__file_fail(__file);
 	while (!__file.eof())
 	{
 		if (!__line_splited.empty())
 		{
-			(this->*__handlers.at(__line_splited[0]))();
+			__vector_display(__line_splited);
+			(this->*__handlers.at(__line_splited[0]))(__server, __values);
+			if (!__curly_server)
+			{
+				__servers.push_back(__server);
+				__server.~Server();
+			}
 			continue;
 		}
 		else
 		{
-			getline(__file, line);
-			line = __extract_parameters(line);
-			__line_splited = __split_attrubites(line, "{}; \t\r\v\f");
+			getline(__file, __line);
+			__line = __extract_parameters(__line);
+			__line_splited = __split_attrubites(__line, "{}; \t\r\v\f");
 		}
 	}
 	__file.close();
 }
 
-void Web::__server()
-{
-	std::string line;
 
-	__vector_display(__line_splited);
+/* --------------------------------- SERVER --------------------------------- */
+/* --------------------------------- SERVER --------------------------------- */
+/* --------------------------------- SERVER --------------------------------- */
+/* --------------------------------- SERVER --------------------------------- */
+void Web::__server(Server &__server, std::vector<std::string> &__values)
+{
+	(void)__server;
+	(void)__values;
+	std::string __line;
+
 	if (__line_splited.size() == 1)
 	{
-		getline(__file, line);
-		line = __extract_parameters(line);
+		getline(__file, __line);
+		__line = __extract_parameters(__line);
 		__line_splited.clear();
-		__line_splited = __split_attrubites(line, "{}; \t\r\v\f");
+		__line_splited = __split_attrubites(__line, "{}; \t\r\v\f");
 		//TODO: handline "{, }"
+				
+		__curly_right_check(__line_splited[0]);
 		__line_splited.erase(__line_splited.begin(), __line_splited.begin() + 1);
 	}
 	else if (__line_splited.size() > 1)
 	{
-		if (__line_splited[1] != "{")
-		{
-			std::cerr << "error: Curly Bracket missing!." << std::endl;
-			exit(1);
-		}
+		__curly_right_check(__line_splited[1]);
 		__line_splited.erase(__line_splited.begin(), __line_splited.begin() + 2);
-		__curly_server = true;
 	}
+	__curly_server = true;
 }
 
-void Web::__listen()
+
+/* --------------------------------- LISTEN --------------------------------- */
+/* --------------------------------- LISTEN --------------------------------- */
+/* --------------------------------- LISTEN --------------------------------- */
+/* --------------------------------- LISTEN --------------------------------- */
+void Web::__listen(Server &__server, std::vector<std::string> &__values)
 {
-	__vector_display(__line_splited);
-	__line_splited.clear();
+	__m_iterator	__listen = __server.__attributes.find("listen");
+
+	/*remove default configuration*/
+	if (__server.__listen_default)
+	{
+		__listen->second.clear();
+		__server.__listen_default = false;
+	}
+
+	/* erase "listen key word"*/
+	__line_splited.erase(__line_splited.begin());
+	
+
+	/* handling*/
+	if (std::find(__line_splited.begin(), __line_splited.end(), ";") == __line_splited.end())
+		__semi_colon_missing();
+	if (__line_splited.size() < 2)
+		__attributes_missing();
+
+
+	/*parse listen args*/
+	__listen = __server.__attributes.find("listen");
+	__values = __parse_listen_args(__line_splited);
+	__listen->second.insert(__listen->second.end(), __values.begin(), __values.end());
 }
 
-void Web::__location()
+std::vector<std::string> Web::__parse_listen_args(std::vector<std::string> &args)
 {
-	std::string line;
-
-	__location_zone = true;
-	__vector_display(__line_splited);
-	if (__line_splited.size() > 3)
+	std::vector<std::string>	__holder;
+	
+	while (args.front() != ";")	
 	{
-		std::cerr << "error: location syntax!." << std::endl;
-		exit(1);
+		//TODO:handle "}"
+		//TODO:check form of IP
+		//TODO:check range of IP
+		//TODO:check range of PORT
+		//TODO:push result to __holder
+	
+		__line_splited.erase(__line_splited.begin());
+	
+		//TODO:add default PORT to host thar come without PORT
 	}
-	else
+	__line_splited.erase(__line_splited.begin());
+	return __holder;
+}
+
+
+/* -------------------------------- LOCATION -------------------------------- */
+/* -------------------------------- LOCATION -------------------------------- */
+/* -------------------------------- LOCATION -------------------------------- */
+/* -------------------------------- LOCATION -------------------------------- */
+void Web::__location(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+	std::string __line;
+
+	if (__line_splited.size() == 2)
 	{
-		//TODO:save __line_splited[1] (path of location)
-		if (__line_splited.size() == 3)
-		{
-			if (__line_splited[2] != "{")
-			{
-				std::cerr << "error: Curly Bracket missing!." << std::endl;
-				exit(1);
-			}
-			__curly_location = true;
-		}
+		getline(__file, __line);
+		__line = __extract_parameters(__line);
 		__line_splited.clear();
+		__line_splited = __split_attrubites(__line, "{}; \t\r\v\f");
+		//TODO: handline "{, }"
+		__curly_right_check(__line_splited[0]);
+		__line_splited.erase(__line_splited.begin(), __line_splited.begin() + 1);
 	}
+	else if (__line_splited.size() > 2)
+	{
+		__curly_right_check(__line_splited[2]);
+		__line_splited.erase(__line_splited.begin(), __line_splited.begin() + 3);
+	}
+	__curly_location = true;
 }
 
-void Web::__server_name()
-{
-	__vector_display(__line_splited);
+/* ------------------------------- SERVER NAME ------------------------------ */
+/* ------------------------------- SERVER NAME ------------------------------ */
+/* ------------------------------- SERVER NAME ------------------------------ */
+/* ------------------------------- SERVER NAME ------------------------------ */
+void Web::__server_name(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+	// __vector_display(__line_splited);
 	__line_splited.clear();
 }
-void Web::__cgi()
-{
-	__vector_display(__line_splited);
+
+/* ----------------------------------- CGI ---------------------------------- */
+/* ----------------------------------- CGI ---------------------------------- */
+/* ----------------------------------- CGI ---------------------------------- */
+/* ----------------------------------- CGI ---------------------------------- */
+void Web::__cgi(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+	// __vector_display(__line_splited);
 	__line_splited.clear();
 }
-void Web::__root()
-{
-		__vector_display(__line_splited);
+
+/* ---------------------------------- ROOT ---------------------------------- */
+/* ---------------------------------- ROOT ---------------------------------- */
+/* ---------------------------------- ROOT ---------------------------------- */
+/* ---------------------------------- ROOT ---------------------------------- */
+void Web::__root(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+		// __vector_display(__line_splited);
 	__line_splited.clear();
 }
-void Web::__index()
-{
-	__vector_display(__line_splited);
+
+/* ---------------------------------- INDEX --------------------------------- */
+/* ---------------------------------- INDEX --------------------------------- */
+/* ---------------------------------- INDEX --------------------------------- */
+/* ---------------------------------- INDEX --------------------------------- */
+void Web::__index(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+	// __vector_display(__line_splited);
 	__line_splited.clear();
 }
-void Web::__redirect()
-{
-	__vector_display(__line_splited);
+
+/* ------------------------------- REDIRECTION ------------------------------ */
+/* ------------------------------- REDIRECTION ------------------------------ */
+/* ------------------------------- REDIRECTION ------------------------------ */
+/* ------------------------------- REDIRECTION ------------------------------ */
+void Web::__redirect(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+	// __vector_display(__line_splited);
 	__line_splited.clear();
 }
-void Web::__autoindex()
-{
-	__vector_display(__line_splited);
+
+/* -------------------------------- AUTOINDEX ------------------------------- */
+/* -------------------------------- AUTOINDEX ------------------------------- */
+/* -------------------------------- AUTOINDEX ------------------------------- */
+/* -------------------------------- AUTOINDEX ------------------------------- */
+void Web::__autoindex(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+	// __vector_display(__line_splited);
 	__line_splited.clear();
 }
-void Web::__error_page()
-{
-	__vector_display(__line_splited);
+
+/* ------------------------------- ERROR PAGES ------------------------------ */
+/* ------------------------------- ERROR PAGES ------------------------------ */
+/* ------------------------------- ERROR PAGES ------------------------------ */
+/* ------------------------------- ERROR PAGES ------------------------------ */
+void Web::__error_page(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+	// __vector_display(__line_splited);
 	__line_splited.clear();
 }
-void Web::__upload_dir()
-{
-	__vector_display(__line_splited);
+
+/* ------------------------------- UPLOAD DIR ------------------------------- */
+/* ------------------------------- UPLOAD DIR ------------------------------- */
+/* ------------------------------- UPLOAD DIR ------------------------------- */
+/* ------------------------------- UPLOAD DIR ------------------------------- */
+void Web::__upload_dir(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+	// __vector_display(__line_splited);
 	__line_splited.clear();
 }
-void Web::__methods()
-{
-	__vector_display(__line_splited);
+
+/* --------------------------------- METHODS -------------------------------- */
+/* --------------------------------- METHODS -------------------------------- */
+/* --------------------------------- METHODS -------------------------------- */
+/* --------------------------------- METHODS -------------------------------- */
+void Web::__methods(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+	// __vector_display(__line_splited);
 	__line_splited.clear();
 }
-void Web::__client_body_max_size()
-{
-	__vector_display(__line_splited);
+
+/* ----------------------------- CLIENT MAX SIZE ---------------------------- */
+/* ----------------------------- CLIENT MAX SIZE ---------------------------- */
+/* ----------------------------- CLIENT MAX SIZE ---------------------------- */
+/* ----------------------------- CLIENT MAX SIZE ---------------------------- */
+void Web::__client_body_max_size(Server &__server, std::vector<std::string> &__values)
+{	(void)__server;
+	(void)__values;
+	// __vector_display(__line_splited);
 	__line_splited.clear();
 }
