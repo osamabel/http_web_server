@@ -6,7 +6,7 @@
 #    By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/26 16:38:20 by obelkhad          #+#    #+#              #
-#    Updated: 2023/02/27 10:21:26 by obelkhad         ###   ########.fr        #
+#    Updated: 2023/02/28 12:19:14 by obelkhad         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,6 +16,7 @@ CFLAGS = -Wall -Wextra -Werror -std=c++98
 
 SRC	=  main.cpp src/server.cpp\
 				utils/utl_string.cpp\
+				cerr/errors.cpp
 
 OBJ = $(SRC:.cpp=.o)
 
