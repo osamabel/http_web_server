@@ -6,7 +6,7 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/25 18:29:55 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/02/27 18:25:13 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/03/01 09:36:09 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,45 +29,66 @@
 // "accepted_methods"
 // "client_body_max_size"
 
+class Location
+{
+private:
+	std::map<std::string, std::vector<std::string> >		__attributes;
+public:
+	Location();
+	~Location();
+};
 
 class Server
 {
-private:
-	std::map<std::string, std::vector<std::string> > 	__config;
 public:
+	std::vector<Location>									__locations;
+	std::map<std::string, std::vector<std::string> >		__attributes;
+
+	bool													__index_default;
+	bool													__listen_default;
+	bool													__autoindex_default;
+	bool													__client_body_max_size_default;
 	Server();
 	~Server();
+	
 };
 
 class Web
 {
 private:
-	typedef void (Web::*handler)();
-	std::map<std::string, handler>		__handlers;
-	std::vector<Server>	 				__servers;			//array of servers
-	std::vector<std::string> 			__line_splited;
-	std::ifstream						__file;
-	bool								__curly_server;
-	bool								__curly_location;
-	bool								__location_zone;
+	typedef void (Web::*handler)(Server&, std::vector<std::string>&);
+	std::map<std::string, handler>												__handlers;
+	typedef std::vector<std::string>::iterator									__v_iterator;
+	typedef std::map<std::string, std::vector<std::string> >::iterator			__m_iterator;
+	std::vector<Server>	 														__servers;			//array of servers
+	std::vector<std::string> 													__line_splited;
+	std::ifstream																__file;
+	bool																		__curly_server;
+	bool																		__curly_location;
 
-	void __server();
-	void __listen();
-	void __location();
-	void __server_name();
-	void __cgi();
-	void __root();
-	void __index();
-	void __redirect();
-	void __autoindex();
-	void __error_page();
-	void __upload_dir();
-	void __methods();
-	void __client_body_max_size();
+
+	void __server(Server &__server, std::vector<std::string> &__values);
+	void __listen(Server &__server, std::vector<std::string> &__values);
+	void __location(Server &__server, std::vector<std::string> &__values);
+	void __server_name(Server &__server, std::vector<std::string> &__values);
+	void __cgi(Server &__server, std::vector<std::string> &__values);
+	void __root(Server &__server, std::vector<std::string> &__values);
+	void __index(Server &__server, std::vector<std::string> &__values);
+	void __redirect(Server &__server, std::vector<std::string> &__values);
+	void __autoindex(Server &__server, std::vector<std::string> &__values);
+	void __error_page(Server &__server, std::vector<std::string> &__values);
+	void __upload_dir(Server &__server, std::vector<std::string> &__values);
+	void __methods(Server &__server, std::vector<std::string> &__values);
+	void __client_body_max_size(Server &__server, std::vector<std::string> &__values);
+
+
+	
 public:
 	Web();
 	void __parse(std::string &__config_path);
+	std::vector<std::string> __parse_listen_args(std::vector<std::string> &args);
 
 	~Web();
 };
 
+ 
