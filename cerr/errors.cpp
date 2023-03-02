@@ -6,7 +6,7 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/28 12:16:26 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/03/01 15:37:23 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/03/02 16:52:57 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,9 @@ void __attributes_missing()
 	exit(1);
 }
 
-void __wrong_arg()
+void __wrong_location_attribute()
 {
-	std::cerr << "\033[1;31m" << "error: argument in worng zone!." << "\033[0m" << std::endl;
+	std::cerr << "\033[1;31m" << "error: Wrong location attribute." << "\033[0m" << std::endl;
 	exit(1);
 }
 

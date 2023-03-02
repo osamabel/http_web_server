@@ -6,7 +6,7 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/25 18:29:55 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/03/01 13:49:29 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/03/02 18:17:53 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,14 @@ public:
 	std::vector<Location>									__locations;
 	std::map<std::string, std::vector<std::string> >		__attributes;
 
+	/*Curly bracket flags*/
 	bool													__curly_location;
+	bool													__curly_server;
 
+	/*Default configuration flags*/
 	bool													__index_default;
 	bool													__listen_default;
+	bool													__root_default;
 	bool													__autoindex_default;
 	bool													__client_body_max_size_default;
 	
@@ -51,10 +55,8 @@ private:
 	std::map<std::string, handler>												__handlers;
 	typedef std::vector<std::string>::iterator									__v_iterator;
 	typedef std::map<std::string, std::vector<std::string> >::iterator			__m_iterator;
-	std::vector<Server>	 														__servers;			//array of servers
 	std::vector<std::string> 													__line_splited;
 	std::ifstream																__file;
-	bool																		__curly_server;
 
 
 	void __server(Server &__server);
@@ -75,11 +77,12 @@ private:
 	
 public:
 	Web();
+	std::vector<Server>	 		__servers;					//array of servers
 	std::vector<Server>			__get_servers();
 	void						__parse(std::string &__config_path);
 	std::vector<std::string>	__parse_listen_args();
 	void						__initial_action(Server &__server);
-
+	bool 						__closed_bracket(Server &__server);
 	~Web();
 };
 

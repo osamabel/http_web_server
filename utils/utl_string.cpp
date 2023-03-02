@@ -6,7 +6,7 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/27 09:49:57 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/03/01 11:19:15 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/03/02 18:14:36 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,28 +74,21 @@ std::string __extract_parameters(std::string &line)
 void __vector_display(std::vector<std::string> &vec)
 {
 	std::vector<std::string>::iterator it = vec.begin();
-	std::cout << "vec >> ";
 	for (; it != vec.end(); ++it)
 		std::cout << "[ " << *it << " ], ";
 	std::cout << '\n';
-	std::cout << "-------------------" << std::endl;
+	std::cout << "........................................." << std::endl;
+	std::cout << '\n';
 }
 
-
-// void __open_curly_bracket( bool __server, bool __loc_zone, bool __location)
-// {
-// 	// if (__server && __loc_zone && __location\
-// 	// 	|| __server && !__loc_zone )
-// 	// {
-// 	// 	std::cerr << "error: Curly Bracket not closed!." << std::endl;
-// 	// 	exit(1);
-// 	// }
-// 	// if (!__server)
-// 	// 	__server = true;
-// 	// if (__server && !__loc_zone)
-// 	// 	__location = true;
-// }
-
-// void __close_curly_bracket( bool __server, bool __loc_zone, bool __location)
-// {
-// }
+void __map_display(std::map<std::string, std::vector<std::string> > &mp)
+{
+	std::map<std::string, std::vector<std::string> >::iterator it = mp.begin();
+	for (; it != mp.end(); ++it)
+	{	
+		std::cout << "-> " << it->first << '\n';
+		__vector_display(it->second);
+	}
+	std::cout << '\n';
+	std::cout << "----------------------------------------" << std::endl;
+}
