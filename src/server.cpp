@@ -6,7 +6,7 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/26 17:26:56 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/03/02 18:36:54 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/03/02 21:56:15 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,10 @@ Location::~Location()
 Server::Server() : 
 __curly_location(false),
 __curly_server(false),
-__index_default(true), 
+__index_default(true),
 __listen_default(true), 
+__server_name_default(true),
+__methods_default(true),
 __root_default(true), 
 __autoindex_default(true),
 __client_body_max_size_default(true)
@@ -77,6 +79,7 @@ __client_body_max_size_default(true)
 Server::~Server()
 {
 	/*probably i'll need to free some containers*/
+	// __attributes.clear();
 }
 
 Web::~Web()
@@ -118,12 +121,15 @@ void Web::__initial_action(Server &__server)
 		__attributes_missing();
 }
 
-bool Web::__closed_bracket(Server &__server)
+bool Web::__closed_bracket(Server &__server, Location &__location)
 {
 	if (__line_splited[0] == "}")
 	{
 		if (__server.__curly_location)
+		{
 			__server.__curly_location = false;
+			__server.__locations.push_back(__location);
+		}
 		else if (__server.__curly_server)
 		{
 			__server.__curly_server = false;
@@ -135,6 +141,21 @@ bool Web::__closed_bracket(Server &__server)
 	return false;
 }
 
+
+std::vector<std::string> Web::__parse_args()
+{
+	std::vector<std::string>	__holder;
+	
+	while (__line_splited.front() != ";")
+	{
+		__holder.push_back(__line_splited.front());
+		__line_splited.erase(__line_splited.begin());
+	}
+
+	/* remove ";" */
+	__line_splited.erase(__line_splited.begin());
+	return __holder;
+}
 
 std::vector<Server> Web::__get_servers()
 { return __servers; }
@@ -156,14 +177,18 @@ void Web::__parse(std::string &__config_path)
 	{
 		if (!__line_splited.empty())
 		{
-			if (__closed_bracket(__server))
+			if (__closed_bracket(__server, __location))
+			{
+				// __server.~Server();
+				// __server = Server();
 				continue;
+			}
 			// std::cout << "[ S: " << __server.__curly_server << " ] | ";
 			// std::cout << "[ L: " << __server.__curly_location << " ]" << '\n' <<'\n';
 			// __vector_display(__line_splited);
 			// __map_display(__server.__attributes);
 			if (!__line_splited.empty())
-				(this->*__handlers.at(__line_splited[0]))(__server);
+				(this->*__handlers.at(__line_splited[0]))(__server, __location);
 		}
 		else
 		{
@@ -180,8 +205,8 @@ void Web::__parse(std::string &__config_path)
 /* --------------------------------- SERVER --------------------------------- */
 /* --------------------------------- SERVER --------------------------------- */
 /* --------------------------------- SERVER --------------------------------- */
-void Web::__server(Server &__server)
-{
+void Web::__server(Server &__server, Location &__location)
+{(void)__location;
 	std::string __line;
 
 	__server.__curly_server = true;
@@ -205,8 +230,8 @@ void Web::__server(Server &__server)
 /* -------------------------------- LOCATION -------------------------------- */
 /* -------------------------------- LOCATION -------------------------------- */
 /* -------------------------------- LOCATION -------------------------------- */
-void Web::__location(Server &__server)
-{
+void Web::__location(Server &__server, Location &__location)
+{(void)__location;
 	std::string __line;
 
 	if (__line_splited.size() == 2)
@@ -230,8 +255,8 @@ void Web::__location(Server &__server)
 /* --------------------------------- LISTEN --------------------------------- */
 /* --------------------------------- LISTEN --------------------------------- */
 /* --------------------------------- LISTEN --------------------------------- */
-void Web::__listen(Server &__server)
-{
+void Web::__listen(Server &__server, Location &__location)
+{(void)__location;
 	__m_iterator				__listen = __server.__attributes.find("listen");
 	std::vector<std::string>	__values;
 
@@ -258,7 +283,7 @@ std::vector<std::string> Web::__parse_listen_args()
 {
 	std::vector<std::string>	__holder;
 	
-	while (__line_splited.front() != ";")	
+	while (__line_splited.front() != ";")
 	{
 		/* CHECK IP FORMT*/
 		__address_prot_form(__line_splited.front());
@@ -277,26 +302,73 @@ std::vector<std::string> Web::__parse_listen_args()
 /* ------------------------------- SERVER NAME ------------------------------ */
 /* ------------------------------- SERVER NAME ------------------------------ */
 /* ------------------------------- SERVER NAME ------------------------------ */
-void Web::__server_name(Server &__server)
-{
+void Web::__server_name(Server &__server, Location &__location)
+{(void)__location;
+	__m_iterator		__server_name = __server.__attributes.find("server_name");
+
+	/*CHECK ZONE*/
+	if (__server.__curly_location)
+		__wrong_location_attribute();
+
 	/*initial action*/
 	__initial_action(__server);
+
+	// /*remove default configuration*/
+	if (__server.__server_name_default)
+	{
+		__server_name->second.clear();
+		__server.__server_name_default = false;
+	}
 
 	/*add valuses*/
 	while (__line_splited.front() != ";")	
 	{
-		(__server.__attributes["server_name"]).push_back(__line_splited.front());
+		__server_name->second.push_back(__line_splited.front());
 		__line_splited.erase(__line_splited.begin());
 	}
 	__line_splited.erase(__line_splited.begin());
 }
 
-/* ----------------------------------- CGI ---------------------------------- */
-/* ----------------------------------- CGI ---------------------------------- */
-/* ----------------------------------- CGI ---------------------------------- */
-/* ----------------------------------- CGI ---------------------------------- */
-void Web::__cgi(Server &__server)
+/* --------------------------------- METHODS -------------------------------- */
+/* --------------------------------- METHODS -------------------------------- */
+/* --------------------------------- METHODS -------------------------------- */
+/* --------------------------------- METHODS -------------------------------- */
+void Web::__methods(Server &__server, Location &__location)
 {
+	__m_iterator				__methods;
+	std::vector<std::string>	__values;
+
+	/*initial action*/
+	__initial_action(__server);
+	
+	/*extract values*/
+	__values = __parse_args();
+
+	/*CHECK LOCATION*/
+	if (__server.__curly_location)
+		__location.__attributes["methods"].insert(\
+		__location.__attributes["methods"].end(), __values.begin(), __values.end());
+	else
+	{
+		__methods = __server.__attributes.find("methods");
+
+		/*remove default configuration*/
+		if (__server.__methods_default)
+		{
+			__methods->second.clear();
+			__server.__methods_default = false;
+		}
+
+		/*add valuses*/
+		__methods->second.insert(__methods->second.end(), __values.begin(), __values.end());
+	}
+}
+/* ----------------------------------- CGI ---------------------------------- */
+/* ----------------------------------- CGI ---------------------------------- */
+/* ----------------------------------- CGI ---------------------------------- */
+/* ----------------------------------- CGI ---------------------------------- */
+void Web::__cgi(Server &__server, Location &__location)
+{(void)__location;
 	/*initial action*/
 	__initial_action(__server);
 
@@ -313,8 +385,8 @@ void Web::__cgi(Server &__server)
 /* ---------------------------------- ROOT ---------------------------------- */
 /* ---------------------------------- ROOT ---------------------------------- */
 /* ---------------------------------- ROOT ---------------------------------- */
-void Web::__root(Server &__server)
-{
+void Web::__root(Server &__server, Location &__location)
+{(void)__location;
 	__m_iterator		__root = __server.__attributes.find("root");
 
 
@@ -345,8 +417,8 @@ void Web::__root(Server &__server)
 /* ---------------------------------- INDEX --------------------------------- */
 /* ---------------------------------- INDEX --------------------------------- */
 /* ---------------------------------- INDEX --------------------------------- */
-void Web::__index(Server &__server)
-{
+void Web::__index(Server &__server, Location &__location)
+{(void)__location;
 	/*initial action*/
 	__initial_action(__server);
 
@@ -363,8 +435,8 @@ void Web::__index(Server &__server)
 /* ------------------------------- REDIRECTION ------------------------------ */
 /* ------------------------------- REDIRECTION ------------------------------ */
 /* ------------------------------- REDIRECTION ------------------------------ */
-void Web::__redirect(Server &__server)
-{
+void Web::__redirect(Server &__server, Location &__location)
+{(void)__location;
 	/*initial action*/
 	__initial_action(__server);
 
@@ -381,8 +453,8 @@ void Web::__redirect(Server &__server)
 /* -------------------------------- AUTOINDEX ------------------------------- */
 /* -------------------------------- AUTOINDEX ------------------------------- */
 /* -------------------------------- AUTOINDEX ------------------------------- */
-void Web::__autoindex(Server &__server)
-{
+void Web::__autoindex(Server &__server, Location &__location)
+{(void)__location;
 	__m_iterator				__autoindex = __server.__attributes.find("autoindex");
 
 	/*remove default configuration*/
@@ -412,8 +484,8 @@ void Web::__autoindex(Server &__server)
 /* ------------------------------- ERROR PAGES ------------------------------ */
 /* ------------------------------- ERROR PAGES ------------------------------ */
 /* ------------------------------- ERROR PAGES ------------------------------ */
-void Web::__error_page(Server &__server)
-{
+void Web::__error_page(Server &__server, Location &__location)
+{(void)__location;
 	/*initial action*/
 	__initial_action(__server);
 
@@ -430,8 +502,8 @@ void Web::__error_page(Server &__server)
 /* ------------------------------- UPLOAD DIR ------------------------------- */
 /* ------------------------------- UPLOAD DIR ------------------------------- */
 /* ------------------------------- UPLOAD DIR ------------------------------- */
-void Web::__upload_dir(Server &__server)
-{
+void Web::__upload_dir(Server &__server, Location &__location)
+{(void)__location;
 	/*initial action*/
 	__initial_action(__server);
 
@@ -448,34 +520,13 @@ void Web::__upload_dir(Server &__server)
 	// 	__bad_number_arguments();
 }
 
-/* --------------------------------- METHODS -------------------------------- */
-/* --------------------------------- METHODS -------------------------------- */
-/* --------------------------------- METHODS -------------------------------- */
-/* --------------------------------- METHODS -------------------------------- */
-void Web::__methods(Server &__server)
-{
-	/*initial action*/
-	__initial_action(__server);
-
-	/*add valuses*/
-	while (__line_splited.front() != ";")	
-	{
-		(__server.__attributes["methods"]).push_back(__line_splited.front());
-		__line_splited.erase(__line_splited.begin());
-	}
-	__line_splited.erase(__line_splited.begin());
-
-	/*check number of args*/
-	// if (__server.__attributes["methods"].size() > 3)
-	// 	__bad_number_arguments();
-}
 
 /* ----------------------------- CLIENT MAX SIZE ---------------------------- */
 /* ----------------------------- CLIENT MAX SIZE ---------------------------- */
 /* ----------------------------- CLIENT MAX SIZE ---------------------------- */
 /* ----------------------------- CLIENT MAX SIZE ---------------------------- */
-void Web::__client_body_max_size(Server &__server)
-{
+void Web::__client_body_max_size(Server &__server, Location &__location)
+{(void)__location;
 	__m_iterator				__client_body_max_size = __server.__attributes.find("client_body_max_size");
 
 	/*remove default configuration*/
