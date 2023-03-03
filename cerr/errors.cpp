@@ -6,7 +6,7 @@
 /*   By: obelkhad <obelkhad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/28 12:16:26 by obelkhad          #+#    #+#             */
-/*   Updated: 2023/03/02 16:52:57 by obelkhad         ###   ########.fr       */
+/*   Updated: 2023/03/03 18:58:17 by obelkhad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,6 @@ void __wrong_location_attribute()
 
 void __bad_syntax()
 {
-	std::cerr << "\033[1;31m" << "error: bad syntax!." << "\033[0m" << std::endl;
+	std::cerr << "\033[1;31m" << "error: bad server key word!." << "\033[0m" << std::endl;
 	exit(1);
 }
